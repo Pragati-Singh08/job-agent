@@ -20,7 +20,11 @@ DB_DIR = os.getenv("DB_DIR", "./data/dbs")
 
 
 def _engine(user_id: str = "default"):
-    path = os.path.join(DB_DIR, f"jobs_{user_id}.db")
+    # Ensure user_id is a string and safe for filenames
+    safe_user_id = "".join([c for c in str(user_id) if c.isalnum() or c in ("-", "_")])
+    if not safe_user_id:
+        safe_user_id = "default"
+    path = os.path.join(DB_DIR, f"jobs_{safe_user_id}.db")
     os.makedirs(os.path.dirname(path), exist_ok=True)
     return create_engine(f"sqlite:///{path}", echo=False)
 

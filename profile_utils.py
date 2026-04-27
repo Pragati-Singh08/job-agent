@@ -67,7 +67,11 @@ from typing import List
 PROFILE_DIR = os.getenv("PROFILE_DIR", "./data/profiles")
 
 def get_profile_path(user_id: str = "default") -> str:
-    return os.path.join(PROFILE_DIR, f"profile_{user_id}.json")
+    # Ensure user_id is a string and safe for filenames
+    safe_user_id = "".join([c for c in str(user_id) if c.isalnum() or c in ("-", "_")])
+    if not safe_user_id:
+        safe_user_id = "default"
+    return os.path.join(PROFILE_DIR, f"profile_{safe_user_id}.json")
 
 
 class JobSeekerProfile(BaseModel):
@@ -97,7 +101,12 @@ def load_profile(user_id: str = "default") -> JobSeekerProfile:
         try:
             with open(path, "r") as f:
                 data = json.load(f)
-            return JobSeekerProfile(**data)
+            if isinstance(data, dict):
+                # Filter out keys that are not in the model to avoid TypeError/ValidationError
+                # on older profiles or if the model changes
+                valid_keys = JobSeekerProfile.model_fields.keys() if hasattr(JobSeekerProfile, "model_fields") else JobSeekerProfile.__fields__.keys()
+                filtered_data = {k: v for k, v in data.items() if k in valid_keys}
+                return JobSeekerProfile(**filtered_data)
         except Exception as e:
             print(f"[profile] Failed to load {path}: {e}")
     return JobSeekerProfile()
@@ -109,7 +118,9 @@ def save_profile(data: dict, user_id: str = "default"):
     # Validate via pydantic before saving
     profile = JobSeekerProfile(**data)
     with open(path, "w") as f:
-        json.dump(profile.model_dump(), f, indent=2)
+        # Pydantic v1/v2 compatibility
+        out = profile.model_dump() if hasattr(profile, "model_dump") else profile.dict()
+        json.dump(out, f, indent=2)
     return profile
 
 
