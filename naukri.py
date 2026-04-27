@@ -6,7 +6,7 @@ Naukri.com job scraper and apply handler.
 import asyncio
 from typing import List
 from base import BasePortalScraper, JobPosting
-from profile_utils import PROFILE
+from profile_utils import load_profile
 
 
 class NaukriScraper(BasePortalScraper):
@@ -39,12 +39,12 @@ class NaukriScraper(BasePortalScraper):
         jobs = []
         seen_urls = set()
 
-        for title in PROFILE.desired_titles[:2]:
+        for title in self.profile.desired_titles[:2]:
             if len(jobs) >= max_results:
                 break
             search_url = (
                 f"https://www.naukri.com/{title.lower().replace(' ', '-')}-jobs"
-                f"?experience={PROFILE.experience_years}"
+                f"?experience={self.profile.experience_years}"
                 f"&jobAge=1"         # posted in last 1 day
             )
             try:

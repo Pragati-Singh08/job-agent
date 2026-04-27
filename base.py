@@ -8,7 +8,7 @@ from abc import ABC, abstractmethod
 from typing import List, Optional
 from playwright.async_api import async_playwright, Page, Browser
 from credentialmanager import CredentialManager
-from profile_utils import PROFILE
+from profile_utils import load_profile
 
 
 class JobPosting:
@@ -43,7 +43,9 @@ class BasePortalScraper(ABC):
     portal_name: str = "base"
     base_url: str = ""
 
-    def __init__(self):
+    def __init__(self, user_id: str = "default"):
+        self.user_id = user_id
+        self.profile = load_profile(user_id)
         self.cred_mgr = CredentialManager()
         self.credential = self.cred_mgr.get(self.portal_name)
         self.browser: Optional[Browser] = None
@@ -73,8 +75,8 @@ class BasePortalScraper(ABC):
         """Build search queries from the user profile."""
         return [
             f"{title} {loc}"
-            for title in PROFILE.desired_titles[:3]    # limit queries
-            for loc in (["Remote"] + PROFILE.preferred_locations[:2])
+            for title in self.profile.desired_titles[:3]    # limit queries
+            for loc in (["Remote"] + self.profile.preferred_locations[:2])
         ]
 
     @abstractmethod

@@ -20,7 +20,7 @@
 # import os
 # from datetime import datetime, timezone
 # from typing import List
-# from profile_utils import PROFILE
+# from profile_utils import load_profile
 
 
 # class JobResult:
@@ -253,7 +253,7 @@ import aiohttp
 import feedparser
 import os
 from typing import List
-from profile_utils import PROFILE
+from profile_utils import load_profile
 
 
 # ── Job Model ────────────────────────────────────────────────────────────────
@@ -480,11 +480,12 @@ async def search_linkedin_rapidapi(query: str, location: str = "India", limit: i
 
 
 # ── MASTER PIPELINE ──────────────────────────────────────────────────────────
-async def search_all_portals(limit_each: int = 20):
+async def search_all_portals(limit_each: int = 20, user_id: str = "default"):
     all_jobs = []
 
-    queries = PROFILE.desired_titles[:3]
-    location = PROFILE.preferred_locations[0] if PROFILE.preferred_locations else "India"
+    profile = load_profile(user_id)
+    queries = profile.desired_titles[:3]
+    location = profile.preferred_locations[0] if profile.preferred_locations else "India"
 
     tasks = []
 

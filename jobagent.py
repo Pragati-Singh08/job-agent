@@ -22,7 +22,7 @@
 # from jobmatch import JobMatcher
 # from credentialmanager import CredentialManager
 # from jobstore import JobStore
-# from profile_utils import PROFILE
+# from profile_utils import load_profile
 
 # load_dotenv()
 
@@ -74,7 +74,12 @@
 #         from portals.naukri import NaukriScraper
 #         from portals.indeed_cutshort import IndeedScraper, CutshortScraper
 
-#         scrapers = [IndeedScraper(), LinkedInScraper(), NaukriScraper(), CutshortScraper()]
+#         scrapers = [
+            IndeedScraper(user_id=user_id),
+            LinkedInScraper(user_id=user_id),
+            NaukriScraper(user_id=user_id),
+            CutshortScraper(user_id=user_id)
+        ]
 #         all_jobs = []
 
 #         async def run():
@@ -187,7 +192,7 @@ from langchain_community.chat_message_histories import ChatMessageHistory
 
 from jobmatch import JobMatcher
 from jobstore import JobStore
-from profile_utils import PROFILE
+from profile_utils import load_profile
 
 load_dotenv()
 
@@ -226,20 +231,22 @@ Task: {input}
 """)
 
 
-def build_agent():
+def build_agent(user_id: str = "default"):
+    """Build the LangChain ReAct agent with HuggingFace backend."""
+    profile = load_profile(user_id)
 
     # ── LLM (HuggingFace) ───────────────────────────────────
     llm = HuggingFaceEndpoint(
         repo_id=os.getenv("HF_MODEL_ID", "mistralai/Mistral-7B-Instruct-v0.2"),
         huggingfacehub_api_token=os.getenv("HUGGINGFACEHUB_API_TOKEN"),
-        max_new_tokens=512,
+        max_new_tokens=int(os.getenv("MAX_TOKENS_PER_LLM_CALL", "512")),
         temperature=0.1,
         streaming=False,
         do_sample=False,
     )
 
-    matcher = JobMatcher()
-    store = JobStore()
+    matcher = JobMatcher(user_id=user_id)
+    store = JobStore(user_id=user_id)
 
     # ── Tool 1: Scrape ─────────────────────────────────────
     def scrape_all_portals(query: str) -> str:
@@ -247,7 +254,12 @@ def build_agent():
         from naukri import NaukriScraper
         from indeedcutshort import IndeedScraper, CutshortScraper
 
-        scrapers = [IndeedScraper(), LinkedInScraper(), NaukriScraper(), CutshortScraper()]
+        scrapers = [
+            IndeedScraper(user_id=user_id),
+            LinkedInScraper(user_id=user_id),
+            NaukriScraper(user_id=user_id),
+            CutshortScraper(user_id=user_id)
+        ]
         all_jobs = []
 
         async def run():
@@ -298,9 +310,9 @@ def build_agent():
 
     # ── Prompt fill ─────────────────────────────────────────
     prompt = AGENT_PROMPT.partial(
-        name=PROFILE.name,
-        titles=", ".join(PROFILE.desired_titles[:3]),
-        skills=", ".join(PROFILE.desired_skills[:5]),
+        name=profile.name,
+        titles=", ".join(profile.desired_titles[:3]),
+        skills=", ".join(profile.desired_skills[:5]),
     )
 
     agent = create_react_agent(llm=llm, tools=tools, prompt=prompt)

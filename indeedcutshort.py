@@ -9,7 +9,7 @@ import aiohttp
 from bs4 import BeautifulSoup
 from typing import List
 from base import BasePortalScraper, JobPosting
-from profile_utils import PROFILE
+from profile_utils import load_profile
 
 
 # ──────────────────────────────────────────────────────────
@@ -37,8 +37,8 @@ class IndeedScraper(BasePortalScraper):
         seen = set()
 
         async with aiohttp.ClientSession(headers=self.HEADERS) as session:
-            for title in PROFILE.desired_titles[:2]:
-                for loc in (["Remote"] + PROFILE.preferred_locations[:1]):
+            for title in self.profile.desired_titles[:2]:
+                for loc in (["Remote"] + self.profile.preferred_locations[:1]):
                     if len(jobs) >= max_results:
                         break
                     url = (
@@ -122,7 +122,7 @@ class CutshortScraper(BasePortalScraper):
 
         jobs = []
         try:
-            for title in PROFILE.desired_titles[:2]:
+            for title in self.profile.desired_titles[:2]:
                 url = f"https://cutshort.io/jobs?query={title.replace(' ', '%20')}&sort=recent"
                 await self.page.goto(url, wait_until="domcontentloaded", timeout=20000)
                 await asyncio.sleep(2)

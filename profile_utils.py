@@ -64,7 +64,10 @@ import os
 from pydantic import BaseModel
 from typing import List
 
-PROFILE_PATH = os.getenv("PROFILE_PATH", "./data/profile.json")
+PROFILE_DIR = os.getenv("PROFILE_DIR", "./data/profiles")
+
+def get_profile_path(user_id: str = "default") -> str:
+    return os.path.join(PROFILE_DIR, f"profile_{user_id}.json")
 
 
 class JobSeekerProfile(BaseModel):
@@ -88,25 +91,26 @@ class JobSeekerProfile(BaseModel):
     avoid_companies: List[str] = []
 
 
-def load_profile() -> JobSeekerProfile:
-    if os.path.exists(PROFILE_PATH):
+def load_profile(user_id: str = "default") -> JobSeekerProfile:
+    path = get_profile_path(user_id)
+    if os.path.exists(path):
         try:
-            with open(PROFILE_PATH, "r") as f:
+            with open(path, "r") as f:
                 data = json.load(f)
             return JobSeekerProfile(**data)
         except Exception as e:
-            print(f"[profile] Failed to load {PROFILE_PATH}: {e}")
+            print(f"[profile] Failed to load {path}: {e}")
     return JobSeekerProfile()
 
 
-def save_profile(data: dict):
-    os.makedirs(os.path.dirname(PROFILE_PATH) if os.path.dirname(PROFILE_PATH) else ".", exist_ok=True)
+def save_profile(data: dict, user_id: str = "default"):
+    path = get_profile_path(user_id)
+    os.makedirs(os.path.dirname(path), exist_ok=True)
     # Validate via pydantic before saving
     profile = JobSeekerProfile(**data)
-    with open(PROFILE_PATH, "w") as f:
+    with open(path, "w") as f:
         json.dump(profile.model_dump(), f, indent=2)
     return profile
 
 
-# Singleton — refreshed on each import cycle via load_profile()
-PROFILE = load_profile()
+# Profile storage directory

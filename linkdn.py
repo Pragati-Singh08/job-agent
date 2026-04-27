@@ -7,7 +7,7 @@ Uses Playwright for login and job scraping.
 import asyncio
 from typing import List
 from base import BasePortalScraper, JobPosting
-from profile_utils import PROFILE
+from profile_utils import load_profile
 
 
 class LinkedInScraper(BasePortalScraper):
@@ -39,8 +39,8 @@ class LinkedInScraper(BasePortalScraper):
         jobs = []
         seen_urls = set()
 
-        for title in PROFILE.desired_titles[:2]:
-            for location in (["Remote"] + PROFILE.preferred_locations[:1]):
+        for title in self.profile.desired_titles[:2]:
+            for location in (["Remote"] + self.profile.preferred_locations[:1]):
                 if len(jobs) >= max_results:
                     break
                 url = (
@@ -131,7 +131,7 @@ class LinkedInScraper(BasePortalScraper):
             # Fill phone if asked
             phone_field = await self.page.query_selector("input[id*='phoneNumber']")
             if phone_field:
-                await phone_field.fill(PROFILE.phone)
+                await phone_field.fill(self.profile.phone)
 
             # Check if multi-step (skip complex flows to avoid mistakes)
             next_btn = await self.page.query_selector("button[aria-label='Continue to next step']")

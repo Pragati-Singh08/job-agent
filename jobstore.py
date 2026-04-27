@@ -16,12 +16,13 @@ from dotenv import load_dotenv
 
 load_dotenv()
 
-DB_PATH = os.getenv("DB_PATH", "./data/jobs.db")
+DB_DIR = os.getenv("DB_DIR", "./data/dbs")
 
 
-def _engine():
-    os.makedirs(os.path.dirname(DB_PATH) if os.path.dirname(DB_PATH) else ".", exist_ok=True)
-    return create_engine(f"sqlite:///{DB_PATH}", echo=False)
+def _engine(user_id: str = "default"):
+    path = os.path.join(DB_DIR, f"jobs_{user_id}.db")
+    os.makedirs(os.path.dirname(path), exist_ok=True)
+    return create_engine(f"sqlite:///{path}", echo=False)
 
 
 metadata = MetaData()
@@ -45,8 +46,8 @@ jobs_table = Table("jobs", metadata,
 
 
 class JobStore:
-    def __init__(self):
-        self.engine = _engine()
+    def __init__(self, user_id: str = "default"):
+        self.engine = _engine(user_id)
         metadata.create_all(self.engine)
 
     @staticmethod

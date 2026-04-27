@@ -8,7 +8,7 @@ No LLM tokens are consumed here — pure vector math.
 import numpy as np
 from typing import List
 from sentence_transformers import SentenceTransformer
-from profile_utils import PROFILE
+from profile_utils import load_profile
 
 
 class JobMatcher:
@@ -19,18 +19,20 @@ class JobMatcher:
 
     MODEL_NAME = "sentence-transformers/all-MiniLM-L6-v2"
 
-    def __init__(self):
-        print("Loading embedding model (first run downloads ~22MB)...")
+    def __init__(self, user_id: str = "default"):
+        print(f"Loading embedding model for {user_id}...")
+        self.user_id = user_id
+        self.profile = load_profile(user_id)
         self.model = SentenceTransformer(self.MODEL_NAME)
         self._resume_embedding = self._build_resume_embedding()
 
     def _build_resume_embedding(self) -> np.ndarray:
         # Combine resume + desired titles/skills into a rich query vector
         profile_text = (
-            f"{PROFILE.resume_text}\n"
-            f"Target roles: {', '.join(PROFILE.desired_titles)}\n"
-            f"Skills: {', '.join(PROFILE.desired_skills)}\n"
-            f"Preferred locations: {', '.join(PROFILE.preferred_locations)}"
+            f"{self.profile.resume_text}\n"
+            f"Target roles: {', '.join(self.profile.desired_titles)}\n"
+            f"Skills: {', '.join(self.profile.desired_skills)}\n"
+            f"Preferred locations: {', '.join(self.profile.preferred_locations)}"
         )
         return self.model.encode(profile_text, normalize_embeddings=True)
 
