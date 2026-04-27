@@ -13,8 +13,6 @@ from sqlalchemy import (
     String, Float, DateTime, Boolean, Text, select, func
 )
 from dotenv import load_dotenv
-import streamlit as st
-DB_PATH = st.secrets.get("DB_PATH", "./data/jobs.db")
 
 load_dotenv()
 

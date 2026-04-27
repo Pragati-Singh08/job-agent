@@ -243,9 +243,9 @@ def build_agent():
 
     # ── Tool 1: Scrape ─────────────────────────────────────
     def scrape_all_portals(query: str) -> str:
-        from portals.linkedin import LinkedInScraper
-        from portals.naukri import NaukriScraper
-        from portals.indeed_cutshort import IndeedScraper, CutshortScraper
+        from linkdn import LinkedInScraper
+        from naukri import NaukriScraper
+        from indeedcutshort import IndeedScraper, CutshortScraper
 
         scrapers = [IndeedScraper(), LinkedInScraper(), NaukriScraper(), CutshortScraper()]
         all_jobs = []
