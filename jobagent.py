@@ -74,12 +74,12 @@
 #         from portals.naukri import NaukriScraper
 #         from portals.indeed_cutshort import IndeedScraper, CutshortScraper
 
-#         scrapers = [
-            IndeedScraper(user_id=user_id),
-            LinkedInScraper(user_id=user_id),
-            NaukriScraper(user_id=user_id),
-            CutshortScraper(user_id=user_id)
-        ]
+# #         scrapers = [
+#             IndeedScraper(user_id=user_id),
+#             LinkedInScraper(user_id=user_id),
+#             NaukriScraper(user_id=user_id),
+#             CutshortScraper(user_id=user_id)
+#         ]
 #         all_jobs = []
 
 #         async def run():
